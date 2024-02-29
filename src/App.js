@@ -1,23 +1,43 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import Boutons from "./components/boutons";
+import { useState, useEffect } from "react";
+// import neo4j from "neo4j-driver";
 
 function App() {
+  // const [nodes, setNodes] = useState([]);
+
+  // useEffect(() => {
+  //   const driver = neo4j.driver(
+  //     "bolt://localhost:7687",
+  //     neo4j.auth.basic("neo4j", "labdddemathildeetmarie")
+  //   );
+  //   const session = driver.session();
+
+  //   session
+  //     .run("MATCH (n) RETURN n LIMIT 10")
+  //     .then((result) => {
+  //       const nodesArray = result.records.map(
+  //         (record) => record.get("n").properties
+  //       );
+  //       setNodes(nodesArray);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Something went wrong: ", error);
+  //     })
+  //     .then(() => {
+  //       session.close();
+  //       driver.close();
+  //     });
+  // }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div
+      className="App text-center text-white m-0 p-0"
+      style={{ width: "100vw", height: "100vh" }}
+    >
+      <main>
+        <Boutons />
+      </main>
     </div>
   );
 }
