@@ -13,14 +13,11 @@ const MoyenneParMatiere = () => {
     const session = driver.session();
 
     session
-      //lmoyennes par matières
-      .run(
-        "MATCH (m:Matière) RETURN m.id, m.nom, m.min, m.max, m.moyenne, m.appréciation"
-      )
+      .run("MATCH (n:Matière) RETURN n")
       .then((result) => {
-        const nodesArray = result.records.map(
-          (record) => record.get("m").properties
-        );
+        const nodesArray = result.records.map((record) => ({
+          record: record.get("n").properties,
+        }));
         setNodes(nodesArray);
       })
       .catch((error) => {
@@ -39,22 +36,15 @@ const MoyenneParMatiere = () => {
           <tr>
             <th className="pb-5">ID</th>
             <th className="pb-5">Matière</th>
-            <th className="pb-5">Min</th>
+            {/* <th className="pb-5">Min</th>
             <th className="pb-5">Max</th>
             <th className="pb-5">Moyenne</th>
-            <th className="pb-5">Appréciation</th>
+            <th className="pb-5">Appréciation</th> */}
           </tr>
         </thead>
         <tbody>
-          {nodes.map((record, index) => (
-            <tr key={index}>
-              <td>{record.id}</td>
-              <td>{record.nom}</td>
-              <td>{record.min}</td>
-              <td>{record.max}</td>
-              <td>{record.moyenne}</td>
-              <td>{record.appréciation}</td>
-            </tr>
+          {nodes.map((node, index) => (
+            <tr key={index}>{JSON.stringify(node)}</tr>
           ))}
         </tbody>
       </table>
