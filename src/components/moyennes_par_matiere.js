@@ -1,9 +1,8 @@
-//ici, on va afficher les moyennes par matières
 import React, { useState, useEffect } from "react";
 import neo4j from "neo4j-driver";
 
 const MoyenneParMatiere = () => {
-  const [nodes, setNodes] = useState([]);
+  const [matieres, setMatieres] = useState([]);
 
   useEffect(() => {
     const driver = neo4j.driver(
@@ -13,17 +12,27 @@ const MoyenneParMatiere = () => {
     const session = driver.session();
 
     session
-      .run("MATCH (n:Matière) RETURN n")
+      .run(
+        `
+        MATCH (e:Élève)-[a:A_NOTE]->(n:Note)-[r:APPARTIENT_A]->(m:Matière)
+        RETURN m.id AS id, m.nom AS matiere, avg(a.valeur) AS moyenne
+      `
+      )
       .then((result) => {
-        const nodesArray = result.records.map((record) => ({
-          record: record.get("n").properties,
+        const matieresArray = result.records.map((record) => ({
+          id: record.get("id"),
+          matiere: record.get("matiere"),
+          moyenne: record.get("moyenne").toFixed(2), // Arrondir la moyenne à deux décimales
         }));
-        setNodes(nodesArray);
+        setMatieres(matieresArray);
       })
       .catch((error) => {
-        console.error("Something went wrong: ", error);
+        console.error(
+          "Erreur lors de la récupération des moyennes par matière: ",
+          error
+        );
       })
-      .then(() => {
+      .finally(() => {
         session.close();
         driver.close();
       });
@@ -34,18 +43,31 @@ const MoyenneParMatiere = () => {
       <table className="w-100">
         <thead>
           <tr>
-            <th className="pb-5">ID</th>
+            <th className="pb-5">ID matière</th>
             <th className="pb-5">Matière</th>
-            {/* <th className="pb-5">Min</th>
-            <th className="pb-5">Max</th>
             <th className="pb-5">Moyenne</th>
-            <th className="pb-5">Appréciation</th> */}
           </tr>
         </thead>
         <tbody>
-          {nodes.map((node, index) => (
-            <tr key={index}>{JSON.stringify(node)}</tr>
+          {matieres.map((matiere, index) => (
+            <tr key={index}>
+              <td>
+                {
+                  String(
+                    matiere.id
+                  ) /* obligée de le mettre en string car pb sinon */
+                }
+              </td>
+              <td>{matiere.matiere}</td>
+              <td>{matiere.moyenne}</td>
+            </tr>
           ))}
+          {/* Vérifiez s'il y a des données à afficher */}
+          {matieres.length === 0 && (
+            <tr>
+              <td colSpan="2">Aucune donnée à afficher</td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>
