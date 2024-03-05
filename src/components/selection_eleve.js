@@ -1,39 +1,46 @@
 import React, { useState, useEffect } from "react";
 import NotesParEleve from "./notes_par_eleve";
+import neo4j from "neo4j-driver";
 
 const SelectionEleve = () => {
-  // const [data, setData] = useState([]);
-  const [affichage, setAffichage] = useState("");
+  const [eleves, setEleves] = useState([]);
+  const [eleveChoisi, setEleveChoisi] = useState("");
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const result = await session.run(`
-  //           MATCH (e:Élève)
-  //           RETURN e.id, e.nom, e.prénom
-  //       `);
-  //       console.log("Résultat de la requête Neo4j :", result.records);
-  //       setData(
-  //         result.records.map((record) => ({
-  //           élève: record.get("e").properties,
-  //         }))
-  //       );
-  //     } catch (error) {
-  //       console.error("Erreur lors de la récupération des données :", error);
-  //     } finally {
-  //       session.close();
-  //     }
-  //   };
+  useEffect(() => {
+    const driver = neo4j.driver(
+      "bolt://localhost:7687",
+      neo4j.auth.basic("neo4j", "labdddemathildeetmarie")
+    );
+    const session = driver.session();
 
-  //   fetchData();
-
-  //   return () => {
-  //     driver.close();
-  //   };
-  // }, []);
+    session
+      .run(
+        `
+        MATCH (e:Élève)
+        RETURN e.nom AS nom, e.prénom AS prénom
+      `
+      )
+      .then((result) => {
+        const elevesArray = result.records.map((record) => ({
+          nom: record.get("nom"),
+          prénom: record.get("prénom"),
+        }));
+        setEleves(elevesArray);
+      })
+      .catch((error) => {
+        console.error(
+          "Erreur lors de la récupération des moyennes par élèves: ",
+          error
+        );
+      })
+      .finally(() => {
+        session.close();
+        driver.close();
+      });
+  }, []);
 
   const handleSelectChange = (event) => {
-    setAffichage(event.target.value);
+    setEleveChoisi(event.target.value);
   };
 
   return (
@@ -42,35 +49,19 @@ const SelectionEleve = () => {
       style={{ maxHeight: "450px", overflowY: "auto" }}
     >
       {/* menu déroulant permettant de selectionner un eleve */}
-
       <select onChange={handleSelectChange} className="glass1 h-25 text-white">
-        <option className="text-black" value="NotesParEleve">
-          Sophie Dubois
-        </option>
-        <option className="text-black" value="NotesParEleve">
-          Jean Dupont
-        </option>
-        <option className="text-black" value="">
-          Marie Durand
-        </option>
-        <option className="text-black" value="">
-          Paul Martin
-        </option>
-        <option className="text-black" value="NotesParEleve">
-          Sophie Dubois
-        </option>
-        <option className="text-black" value="">
-          Jean Ber
-        </option>
-        <option className="text-black" value="NotesParEleve">
-          Marie Kaka
-        </option>
-        <option className="text-black" value="">
-          Paul Miral
-        </option>
-        {/* changer la façon de faire */}
+        <option value="">Choisissez un élève</option>
+        {eleves.map((eleve, index) => (
+          <option key={index} value={String(eleve.nom)}>
+            {eleve.nom} {eleve.prénom}
+          </option>
+        ))}
       </select>
-      {affichage === "NotesParEleve" && <NotesParEleve />}
+
+      {/* affichage des notes de l'élève sélectionné */}
+      <div>
+        <NotesParEleve eleve={eleveChoisi} />
+      </div>
     </div>
   );
 };

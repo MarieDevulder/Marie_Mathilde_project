@@ -1,37 +1,52 @@
 //ici, on va afficher les moyennes par matières
 import React, { useState, useEffect } from "react";
+import neo4j from "neo4j-driver";
 
 const NotesParEleve = () => {
-  // const [data, setData] = useState([]);
+  const [eleves, setEleves] = useState([]);
+  const [matieres, setMatieres] = useState([]);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const result = await session.run(`
-  //           MATCH (e:Élève)-[n:NOTÉ]->(m:Matière)
-  //           RETURN e.id, e.nom, e.prénom, AVG(n.note) as moyenne
-  //       `);
-  //       console.log("Résultat de la requête Neo4j :", result.records);
-  //       setData(
-  //         result.records.map((record) => ({
-  //           élève: record.get("e").properties,
-  //           matière: record.get("m").properties,
-  //           moyenne: record.get("moyenne"),
-  //         }))
-  //       );
-  //     } catch (error) {
-  //       console.error("Erreur lors de la récupération des données :", error);
-  //     } finally {
-  //       session.close();
-  //     }
-  //   };
+  useEffect(() => {
+    const driver = neo4j.driver(
+      "bolt://localhost:7687",
+      neo4j.auth.basic("neo4j", "labdddemathildeetmarie")
+    );
+    const session = driver.session();
 
-  //   fetchData();
+    session
+      .run(
+        `
+        MATCH (e:Élève)-[a:A_NOTE]->(n:Note)-[r:APPARTIENT_A]->(m:Matière)
+        RETURN e.id AS id, e.nom AS nom, e.prénom AS prénom, avg(a.valeur) AS moyenne, m.nom AS matiere, a.valeur AS note
 
-  //   return () => {
-  //     driver.close();
-  //   };
-  // }, []);
+      `
+      )
+      .then((result) => {
+        const elevesArray = result.records.map((record) => ({
+          id: record.get("id"),
+          nom: record.get("nom"),
+          prénom: record.get("prénom"),
+          moyenne: record.get("moyenne").toFixed(2), // Arrondir la moyenne à deux décimales
+        }));
+        setEleves(elevesArray);
+
+        const matieresArray = result.records.map((record) => ({
+          matiere: record.get("matiere"),
+          note: record.get("note"),
+        }));
+        setMatieres(matieresArray);
+      })
+      .catch((error) => {
+        console.error(
+          "Erreur lors de la récupération des moyennes par élèves: ",
+          error
+        );
+      })
+      .finally(() => {
+        session.close();
+        driver.close();
+      });
+  }, []);
 
   return (
     <div
@@ -45,32 +60,12 @@ const NotesParEleve = () => {
             <th className="pb-5 px-2">Nom</th>
             <th className="pb-5 px-2">Prénom</th>
             <th className="pb-5 px-2">Moyenne Générale</th>
-            {/* 
-            {
-              /* {boucle qui mets autant de matiere qu'il y en a dans la base de donnée 
-              data.map((record, index) => (
-                <th key={index} className="pb-5">
-                  {record.matière.nom}
-                </th>
-              ))
-            } 
-            */}
 
             {
-              /* {boucle temporaire qui genère pour l'intant 3 matières qui sont ['mathématiques', 'physique', 'anglais']*/
-              [
-                "Mathématiques",
-                "Physique",
-                "Anglais",
-                "mécaQ",
-                "metaheuristique",
-                "BDD No SQL",
-                "machine learning",
-                "IA",
-                "Python",
-              ].map((matiere, index) => (
-                <th key={index} className="pb-5 px-2">
-                  {matiere}
+              // boucle qui mets autant de matiere qu'il y en a dans la base de donnée
+              matieres.map((record, index) => (
+                <th key={index} className="pb-5">
+                  {matieres.matiere}
                 </th>
               ))
             }
@@ -78,33 +73,18 @@ const NotesParEleve = () => {
         </thead>
         <tbody>
           <tr>
-            <td>1</td>
-            <td>Devulder</td>
-            <td>Mathilde</td>
-            <td>14,5</td>
-            {/* idem que pour le thead */}
-            {["15", "14", "12", "11", "20", "10", "9", "11,5", "17"].map(
-              (note, index) => (
-                <td key={index}>{note}</td>
-              )
-            )}
-          </tr>
-
-          {/* 
-            {data.map((record, index) => (
-                <tr key={index}>
-                <td>{record.élève.id}</td>
-                <td>{record.élève.nom}</td>
-                <td>{record.élève.prénom}</td>
-                <td>{record.élève.moyenne}</td>
-                {data.map((record, index) => (
-                  <td key={index}>{record.matière.moyenne}</td>
-                ))
-                
-                }
-                </tr>
+            {eleves.map((eleves, index) => (
+              <tr key={index}>
+                <td>{String(eleves.id)}</td>
+                <td>{eleves.nom}</td>
+                <td>{eleves.prénom}</td>
+                <td>{eleves.moyenne}</td>
+                {matieres.map((matieres, index) => (
+                  <td key={index}>{matieres.note}</td>
+                ))}
+              </tr>
             ))}
-          */}
+          </tr>
         </tbody>
       </table>
     </div>

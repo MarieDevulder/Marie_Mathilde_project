@@ -1,36 +1,43 @@
 import React, { useState, useEffect } from "react";
+import neo4j from "neo4j-driver";
 
 const VueDEnsembleEleves = () => {
-  // const [data, setData] = useState([]);
+  const [eleves, setEleves] = useState([]);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const result = await session.run(`
-  //           MATCH (e:Élève)-[n:NOTÉ]->(m:Matière)
-  //           RETURN e.id, AVG(n.note) as moyenneGenerale
-  //           ORDER BY e.id
-  //       `);
-  //       console.log("Résultat de la requête Neo4j :", result.records);
-  //       setData(
-  //         result.records.map((record) => ({
-  //           élève: record.get("e").properties,
-  //           moyenne: record.get("moyenneGenerale"),
-  //         }))
-  //       );
-  //     } catch (error) {
-  //       console.error("Erreur lors de la récupération des données :", error);
-  //     } finally {
-  //       session.close();
-  //     }
-  //   };
+  useEffect(() => {
+    const driver = neo4j.driver(
+      "bolt://localhost:7687",
+      neo4j.auth.basic("neo4j", "labdddemathildeetmarie")
+    );
+    const session = driver.session();
 
-  //   fetchData();
-
-  //   return () => {
-  //     driver.close();
-  //   };
-  // }, []);
+    session
+      .run(
+        `
+        MATCH (e:Élève)-[a:A_NOTE]->(n:Note)-[r:APPARTIENT_A]->(m:Matière)
+        RETURN e.id AS id, e.nom AS nom, e.prénom AS prénom, avg(a.valeur) AS moyenne
+      `
+      )
+      .then((result) => {
+        const elevesArray = result.records.map((record) => ({
+          id: record.get("id"),
+          nom: record.get("nom"),
+          prénom: record.get("prénom"),
+          moyenne: record.get("moyenne").toFixed(2), // Arrondir la moyenne à deux décimales
+        }));
+        setEleves(elevesArray);
+      })
+      .catch((error) => {
+        console.error(
+          "Erreur lors de la récupération des moyennes par matière: ",
+          error
+        );
+      })
+      .finally(() => {
+        session.close();
+        driver.close();
+      });
+  }, []);
 
   return (
     <div
@@ -38,14 +45,7 @@ const VueDEnsembleEleves = () => {
       style={{ maxHeight: "450px", overflowY: "auto" }}
     >
       <table className="w-100">
-        {/* i want the thead to not move with the scrollbar */}
-        <thead
-        // style={{
-        //   position: "sticky",
-        //   top: "0",
-
-        // }}
-        >
+        <thead>
           <tr>
             <th className="pb-5">ID</th>
             <th className="pb-5">Nom</th>
@@ -55,146 +55,21 @@ const VueDEnsembleEleves = () => {
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>1</td>
-            <td>Devulder</td>
-            <td>Marie</td>
-            <td>14,5</td>
-            <td style={{ width: "35%" }} className="pl-5">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Rigaud</td>
-            <td>Marie</td>
-            <td>12,5</td>
-            <td style={{ width: "35%" }} className="pl-5">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>Devulder</td>
-            <td>Marie</td>
-            <td>14,5</td>
-            <td style={{ width: "35%" }} className="pl-5">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>Rigaud</td>
-            <td>Marie</td>
-            <td>12,5</td>
-            <td style={{ width: "35%" }} className="pl-5">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </td>
-          </tr>
-          <tr>
-            <td>5</td>
-            <td>Devulder</td>
-            <td>Marie</td>
-            <td>14,5</td>
-            <td style={{ width: "35%" }} className="pl-5">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Rigaud</td>
-            <td>Marie</td>
-            <td>12,5</td>
-            <td style={{ width: "35%" }} className="pl-5">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>Devulder</td>
-            <td>Marie</td>
-            <td>14,5</td>
-            <td style={{ width: "35%" }} className="pl-5">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>Rigaud</td>
-            <td>Marie</td>
-            <td>12,5</td>
-            <td style={{ width: "35%" }} className="pl-5">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </td>
-          </tr>
-          <tr>
-            <td>5</td>
-            <td>Devulder</td>
-            <td>Marie</td>
-            <td>14,5</td>
-            <td style={{ width: "35%" }} className="pl-5">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td>Devulder</td>
-            <td>Marie</td>
-            <td>14,5</td>
-            <td style={{ width: "35%" }} className="pl-5">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </td>
-          </tr>
-          <tr>
-            <td>2</td>
-            <td>Rigaud</td>
-            <td>Marie</td>
-            <td>12,5</td>
-            <td style={{ width: "35%" }} className="pl-5">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </td>
-          </tr>
-          <tr>
-            <td>3</td>
-            <td>Devulder</td>
-            <td>Marie</td>
-            <td>14,5</td>
-            <td style={{ width: "35%" }} className="pl-5">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </td>
-          </tr>
-          <tr>
-            <td>4</td>
-            <td>Rigaud</td>
-            <td>Marie</td>
-            <td>12,5</td>
-            <td style={{ width: "35%" }} className="pl-5">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            </td>
-          </tr>
-          {/* 
-            {data.map((record, index) => (
-                <tr key={index}>
-                <td>{record.élève.id}</td>
-                <td>{record.élève.nom}</td>
-                <td>{record.élève.prénom}</td>
-                <td>{record.élève.moyenne}</td>
-                </tr>
-            ))}
-          */}
+          {eleves.map((eleves, index) => (
+            <tr key={index}>
+              <td>{String(eleves.id)}</td>
+              <td>{eleves.nom}</td>
+              <td>{eleves.prénom}</td>
+              <td>{eleves.moyenne}</td>
+              <td>
+                {eleves.moyenne >= 10 ? (
+                  <p>Bravo !</p>
+                ) : (
+                  <p>Peut mieux faire...</p>
+                )}
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
