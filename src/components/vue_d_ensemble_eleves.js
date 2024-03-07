@@ -16,6 +16,7 @@ const VueDEnsembleEleves = () => {
         `
         MATCH (e:Élève)-[a:A_NOTE]->(n:Note)-[r:APPARTIENT_A]->(m:Matière)
         RETURN e.id AS id, e.nom AS nom, e.prénom AS prénom, avg(a.valeur) AS moyenne
+        ORDER BY moyenne DESC
       `
       )
       .then((result) => {

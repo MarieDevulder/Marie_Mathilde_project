@@ -15,13 +15,30 @@ const MoyenneParMatiere = () => {
       .run(
         `
         MATCH (e:Élève)-[a:A_NOTE]->(n:Note)-[r:APPARTIENT_A]->(m:Matière)
-        RETURN m.id AS id, m.nom AS matiere, avg(a.valeur) AS moyenne
+       
+        WITH
+          e.nom AS nom,
+          e.prénom AS prénom,
+          m.id AS id,
+          m.nom AS matiere,
+          a.valeur AS note
+
+        RETURN
+          id,
+          matiere,
+          MIN(note) AS minimum,
+          MAX(note) AS maximum,
+          AVG(note) AS moyenne;
+
+
       `
       )
       .then((result) => {
         const matieresArray = result.records.map((record) => ({
           id: record.get("id"),
           matiere: record.get("matiere"),
+          min: record.get("minimum"),
+          max: record.get("maximum"),
           moyenne: record.get("moyenne").toFixed(2), // Arrondir la moyenne à deux décimales
         }));
         setMatieres(matieresArray);
@@ -45,6 +62,8 @@ const MoyenneParMatiere = () => {
           <tr>
             <th className="pb-5">ID matière</th>
             <th className="pb-5">Matière</th>
+            <th className="pb-5">Minimum</th>
+            <th className="pb-5">Maximum</th>
             <th className="pb-5">Moyenne</th>
           </tr>
         </thead>
@@ -59,7 +78,9 @@ const MoyenneParMatiere = () => {
                 }
               </td>
               <td>{matiere.matiere}</td>
-              <td>{matiere.moyenne}</td>
+              <td>{String(matiere.min)}</td>
+              <td>{String(matiere.max)}</td>
+              <td>{String(matiere.moyenne)}</td>
             </tr>
           ))}
           {/* Vérifiez s'il y a des données à afficher */}
@@ -73,5 +94,6 @@ const MoyenneParMatiere = () => {
     </div>
   );
 };
+
 
 export default MoyenneParMatiere;
