@@ -41,10 +41,15 @@ const SelectionEleve = () => {
   }, []);
 
   const handleSelectChange = (event) => {
+    var nom = event.target.value.split(' ')[0];
+    var prenom = event.target.value.split(' ')[1];
     setEleveChoisi(event.target.value);
+    handleEleveClick(nom, prenom);
   };
 
   const handleEleveClick = (nom, prenom) => {
+    // console.log("Nom: ", nom);
+    // console.log("Prénom: ", prenom);
     // Charger les notes de l'élève sélectionné
     const driver = neo4j.driver(
       "bolt://localhost:7687",
@@ -55,21 +60,24 @@ const SelectionEleve = () => {
     session
       .run(
         `
-        MATCH (e:Élève {prenom: 'Prénom', nom: 'Nom'})
-
-        OPTIONAL MATCH (e)-[a:A_NOTE]->(n:Note)-[r:APPARTIENT_A]->(m:eleveChoisi)
+        MATCH (e:Élève WHERE (e.nom='NAME' AND e.prénom = 'FIRSTNAME'))-[a:A_NOTE]->(n:Note)-[r:APPARTIENT_A]->(m:Matière)
+       
+        WITH
+          e.nom AS nom,
+          e.prénom AS prénom,
+          m.id AS id,
+          m.nom AS matiere,
+          a.valeur AS note
 
         RETURN
-          eleveChoisi
-          e.nom AS nom,
-          e.prenom AS prenom,
-          m.nom AS eleveChoisi,
-          COALESCE(a.valeur, 0) AS note; 
+          *;
 
-      `,
+      `.replace("NAME", nom).replace("FIRSTNAME", prenom),
+
         { nom, prenom }
       )
       .then((result) => {
+        // console.log(result);
         const eleveChoisiArray = result.records.map((record) => ({
           nom: record.get("nom"),
           prénom: record.get("prénom"),
@@ -84,7 +92,7 @@ const SelectionEleve = () => {
           error
         );
       })
-      //ici essaye d'ouvrir la console (clic droit inspecter sur page web) pour voir si on a le message d'erreur (j'ai pas le truc)
+      
       .finally(() => {
         session.close();
         driver.close();
@@ -94,24 +102,26 @@ const SelectionEleve = () => {
   return (
     <div className="w-auto m-5 px-2 d-flex flex-row justify-content-center">
       {/* Menu déroulant permettant de sélectionner un élève */}
-      <select onChange={handleSelectChange} className="glass1 h-25 text-white">
+      <select 
+        onChange={handleSelectChange} 
+        className="glass1 h-25 text-white"
+        >
         <option value="">Choisissez un élève</option>
         {eleves.map((eleve, index) => (
           <option
             key={index}
-            value={String(eleve.nom, eleve.prénom)}
-            onClick={() => handleEleveClick(eleve.nom, eleve.prénom)}
+            value={String(eleve.nom + ' ' + eleve.prénom)}
           >
             {eleve.nom} {eleve.prénom}
           </option>
         ))}
       </select>
+        {/* <button onClick={() => console.log("Nom: ", eleve.nom, "Prénom: ", eleve.prénom)}>Voir les notes</button> */}
 
       {/* Affichage des notes de l'élève sélectionné */}
       
     
-        <h3>Notes de l'élève {eleveChoisi}</h3>
-        
+        <h3>Notes de l'élève : {eleveChoisi}</h3>
         <div className="w-auto glass-table px-2">
         <table>
           <thead>
@@ -123,13 +133,17 @@ const SelectionEleve = () => {
             </tr>
           </thead>
           <tbody>
-            
             {notesEleve.map((eleveChoisi, index) => (
               <tr key={index}>
+                {/* {
+                  String(
+                    eleveChoisi.id
+                  ) /* obligée de le mettre en string car pb sinon */
+                }
                 <td>{eleveChoisi.nom}</td>
                 <td>{eleveChoisi.prénom}</td>
                 <td>{eleveChoisi.matiere}</td>
-                <td>{eleveChoisi.note}</td>
+                <td>{eleveChoisi.note.low}</td>
               </tr>
             ))}
             {eleveChoisi.length === 0 && (
