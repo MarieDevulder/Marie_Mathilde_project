@@ -24,7 +24,7 @@ const VueDEnsembleEleves = () => {
           id: record.get("id"),
           nom: record.get("nom"),
           prénom: record.get("prénom"),
-          moyenne: record.get("moyenne").toFixed(2), // Arrondir la moyenne à deux décimales
+          moyenne: parseFloat(record.get("moyenne")).toFixed(2), // Arrondir la moyenne à deux décimales
         }));
         setEleves(elevesArray);
       })
@@ -39,6 +39,28 @@ const VueDEnsembleEleves = () => {
         driver.close();
       });
   }, []);
+
+  const getAppreciation = (moyenne) => {
+    if (moyenne >= 0 && moyenne <= 5) {
+      return "Médiocre, il est plus que temps de se bouger";
+    } else if (moyenne > 5 && moyenne < 8) {
+      return "Très insuffisant, il faut remonter la pente";
+    } else if (moyenne >= 8 && moyenne < 10) {
+      return "Insuffisant, il faut faire davantage d'efforts";
+    } else if (moyenne >= 10 && moyenne < 12) {
+      return "Suffisant mais il faut pousser un peu plus";
+    } else if (moyenne >= 12 && moyenne < 14) {
+      return "Correct, poursuivre";
+    } else if (moyenne >= 14 && moyenne < 16) {
+      return "Très satisfaisant, continuer";
+    } else if (moyenne >= 16 && moyenne < 19) {
+      return "Excellent, à poursuivre";
+    } else if (moyenne > 19) {
+      return "Quelle excellence, surclassment ?";
+    } else {
+      return "Appréciation indéterminée";
+    }
+  };
 
   return (
     <div
@@ -56,19 +78,13 @@ const VueDEnsembleEleves = () => {
           </tr>
         </thead>
         <tbody>
-          {eleves.map((eleves, index) => (
+          {eleves.map((eleve, index) => (
             <tr key={index}>
-              <td>{String(eleves.id)}</td>
-              <td>{eleves.nom}</td>
-              <td>{eleves.prénom}</td>
-              <td>{eleves.moyenne}</td>
-              <td>
-                {eleves.moyenne >= 10 ? (
-                  <p>Bravo !</p>
-                ) : (
-                  <p>Peut mieux faire...</p>
-                )}
-              </td>
+              <td>{String(eleve.id)}</td>
+              <td>{eleve.nom}</td>
+              <td>{eleve.prénom}</td>
+              <td>{eleve.moyenne}</td>
+              <td>{getAppreciation(parseFloat(eleve.moyenne))}</td>
             </tr>
           ))}
         </tbody>
