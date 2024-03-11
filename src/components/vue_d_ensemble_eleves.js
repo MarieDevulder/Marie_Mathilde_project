@@ -15,7 +15,11 @@ const VueDEnsembleEleves = () => {
       .run(
         `
         MATCH (e:Élève)-[a:A_NOTE]->(n:Note)-[r:APPARTIENT_A]->(m:Matière)
-        RETURN e.id AS id, e.nom AS nom, e.prénom AS prénom, avg(a.valeur) AS moyenne
+        RETURN
+        e.id AS id,
+        e.nom AS nom,
+        e.prénom AS prénom,
+        avg(a.valeur) AS moyenne
         ORDER BY moyenne DESC
       `
       )
@@ -87,6 +91,11 @@ const VueDEnsembleEleves = () => {
               <td>{getAppreciation(parseFloat(eleve.moyenne))}</td>
             </tr>
           ))}
+          {eleves.length === 0 && (
+            <tr>
+              <td colSpan="2">Aucune donnée à afficher</td>
+            </tr>
+          )}
         </tbody>
       </table>
     </div>

@@ -17,8 +17,6 @@ const MoyenneParMatiere = () => {
         MATCH (e:Élève)-[a:A_NOTE]->(n:Note)-[r:APPARTIENT_A]->(m:Matière)
        
         WITH
-          e.nom AS nom,
-          e.prénom AS prénom,
           m.id AS id,
           m.nom AS matiere,
           a.valeur AS note
@@ -94,6 +92,5 @@ const MoyenneParMatiere = () => {
     </div>
   );
 };
-
 
 export default MoyenneParMatiere;
