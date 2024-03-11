@@ -72,7 +72,7 @@
 
 .select-wrapper select:focus {
   outline: none;
-  border-color: #007bff; /* Change focus color as desired */
+  border-color: rgba(79, 103, 79, 255); /* Change focus color as desired */
 }
 
 /* Style the arrow */
